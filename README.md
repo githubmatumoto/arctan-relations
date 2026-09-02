@@ -1,2 +1,14 @@
-# arctan-relations
-Various tools for finding Machin-like formulas.
+# 円周率のarctan関係式を探すための各種ツール
+
+by 松元隆二
+
+初版公開: 2026-9-2
+
+# 1. はじめに
+円周率の計算に使われている公式の一種に三角関数のarctanを使っている式が あります． 有名な式では，次のマチンの公式があります．
+
+pi/4 = arctan(1) = 4arctan(1/5) - arctan(1/239)
+
+このようなarctanを使った式は，無限にあります． 本稿ではarctan関係式と読んでます。英語ではMachin-like formuraと呼ばれることが多いようです。
+
+arctan関係式を探すための各種ツールを公開しています。
