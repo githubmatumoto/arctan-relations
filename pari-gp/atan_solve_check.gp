@@ -1,8 +1,8 @@
-\\ -*- sh -*-
+\\ -*- gp-script -*-
 /*
   ライセンス: GPL
   作者: 松元隆二 (matsumoto(AT)tech-i.kyutech.ac.jp)
-  last updated : 2015年01月18日 (JST)  
+  last updated : 2016/11/11 (JST)  
 
   1. arctan関係式の係数を計算するプログラム
        - atan_solver()
@@ -38,7 +38,15 @@
            の組み合わせでメモリ不足エラーになる修正。原因は複素数乗
 	   算の絶対値が大きくなりすぎていたためなので、閾値設置して戦略
 	   変更。
-2015/1/18, Web掲載版:revXX
+2015/1/18, Web掲載版:rev1574
+2016/5/5, 一部バグ修正。vecsortを追加。
+           x setsearch(XX, 0)
+           o setsearch(vecsort(XX), 0)
+2016/7/20, Web掲載版:rev1644
+           ヘッダにemacsのgp-script-mode用の記述追加しています。
+2016/11/11, 別表のarctan関係式の全リストのリンク先を修正。計算時間を修正。
+
+(編集作業メモ: atan_table更新時はリンク先の更新と計算時間の更新を忘れずに)
 */
 
 /*
@@ -64,7 +72,7 @@
 
      atan_solver([18,57,239]);
      -> 出力: 8933, 1, +12a(1/18)+8a(1/57)-5a(1/239)., [5,13].
-        (出力フォーマットは atan_table.txt参照ください。)
+        (出力フォーマットは atan_table.html参照ください。)
 
   とすれば、算出されます。
 
@@ -104,7 +112,7 @@
 
      atan_check([18,57,239],[12,8,-5]);
      -> 出力: 8933, 1, +12a(1/18)+8a(1/57)-5a(1/239).
-       (出力フォーマットは atan_table.txt参照ください。
+       (出力フォーマットは atan_table.html参照ください。
         前述の関数atan_solverと違い後ろの[5,13]は有りません。)
    
   実行例。
@@ -133,21 +141,25 @@
 関係式のリストの全リストを新形式(2015年以降)から旧形式(2014年以前)に
 変換する手順
 
-関係式のリストの全リストは2015年以降
+関係式のリストの全リストは2015年以降データが非常に大きくなっています。
+特に6項式はファイルサイズ2Gbyte越えてます。そのため、データ形式を変更し
+ています。
 
    4項式全リスト
      http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k4.txt.gz
+     http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k4-diff2016.txt.gz
    5項式全リスト
      http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k5.txt.gz
-   6項式全リスト(ファイルサイズ2Gbyte越えてます,変換の注意点あり)
+     http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k5-diff2016.txt.gz
+   6項式全リスト
      http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k6.txt.gz
+     http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k6-diff2016.txt.gz
    7項式以上 
      http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k7ov.txt.gz
+     http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_k7ov-diff2016.txt.gz
    整数の逆数以外が含まれる公式 
      http://www.pluto.ai.kyutech.ac.jp/~matumoto/atan_table_u-all.txt.gz
-     
 
-データが大きくなりすたため、データ形式を変更しています。
 
 新形式 (注意: ] [の間に,(コンマ)が有りません。空白が入っています。)
 ----
@@ -155,6 +167,9 @@
 [28,443,1393,11018] [22,2,-5,-10]
 [23,182,5118,6072] [17,8,10,5]
 ----
+
+最初の大[]カッコはa(1/X)内の数字Xを列挙, 二つ目の大カッコ[]はa(1/X)の乗
+数です。
 
 旧形式(2014年以前)への変換が必要な場合は本ファイルで定義している関数
 atan_solver()/atan_check()を実行してください。但し素数リストの生成には
@@ -178,10 +193,10 @@ atan_solver()/atan_check()を実行してください。但し素数リストの
 *旧形式(素数リスト有り):
 
 旧形式への変換は以下のとおりです。 コマンドはLinuxを想定。XXをk4,k5,k6,k7ov,u-allに置
-き換えてください。
+き換えてください。(u-allはatan_table_XX-diff20YY.txt.gzは無いです)
 
 中間形式に変換:
-   gzip -dc atan_table_XX.txt.gz | awk '{print "atan_solver("$1");"}' > tmp.gp
+   gzip -dc atan_table_XX.txt.gz atan_table_XX-diff20YY.txt.gz | awk '{print "atan_solver("$1");"}' > tmp.gp
       -> tmp.gpを生成
 
 旧形式に変換:
@@ -192,13 +207,13 @@ atan_solver()/atan_check()を実行してください。但し素数リストの
    rm tmp.txt tmp.gp
       -> 作業ファイルを削除。  
 
-変換時間:(Intel i7-860+CentOS6 で測定)
+変換時間:(Intel(R) Xeon(R) CPU E31240 @ 3.30GHz + CentOS7 で測定)
 
-  4項式(k4) ->  1分以内
-  5項式(k5) -> 数分
-  6項式(k6)　-> 4日程度
-  7項式以上(k7ov) -> 数分
-  逆数以外(u-all)  -> 20分程度
+  4項式(k4) -> 1-2数秒
+  5項式(k5) -> 3分27秒
+  6項式(k6)　-> 5日19時間40分 (79Gのファイルが生成されます)
+  7項式以上(k7ov) -> 31分20秒
+  逆数以外(u-all)  -> 4時間13分
 
 素数リストで注意点:
 巨大な整数の素因数分解の時間短縮のため擬似素数を用いてます。擬似素数を
@@ -210,20 +225,34 @@ atan_solver()/atan_check()を実行してください。但し素数リストの
 ----
 
 *旧形式(素数リスト無し)
-素数リスト有りで6項式が数日かかる理由は素数リストの生成に素因数分解を行っ
-てるからです。素数リストを省略してよければ、以下のコマンドで中間形式の
-tmp.gpを生成すれば6項式でも8時間程度で終わります。
+素数リスト有りで6項式が非常に時間がかかる理由は素数リストの生成に素因数
+分解を行ってるからです。素数リストを省略してよければ、以下のコマンドで
+中間形式のtmp.gpを生成すれば6項式でも現実的な時間で終わります。
 
 中間形式に変換:
-   gzip -dc atan_table_XX.txt.gz | awk '{print "atan_check("$1","$2");"}' > tmp.gp
+   gzip -dc atan_table_XX.txt.gz  atan_table_XX-diff20YY.txt.gz | awk '{print "atan_check("$1","$2");"}' > tmp.gp
       -> tmp.gpを生成
 
-変換時間:(Intel i7-860+CentOS6 で測定)
-  4項式(k4) ->  1分以内
-  5項式(k5) -> 数分
-  6項式(k6)　-> 8時間程度
-  7項式以上(k7ov) -> 数分
-  逆数以外(u-all)  -> 40分程度 (遅くなってます)
+変換時間:(Intel(R) Xeon(R) CPU E31240 @ 3.30GHz + CentOS7 で測定)
+  4項式(k4) ->  1-2秒
+  5項式(k5) -> 2分4秒
+  6項式(k6)　-> 23時間19分 (46Gのファイルが生成されます)
+  7項式以上(k7ov) -> 33分25秒
+  逆数以外(u-all)  -> 11時間9分 (遅くなっています)
+
+*PARI/GP実行時間を速くするための補足
+
+gpコマンド実行時に別の端末からtopコマンドを実行してgpのCPU占有率を見て
+みてください。上記の処理では常時99%になると思います。90%以下の場合はgp
+が作業ファイルディレクトリ/tmpに作るファイルの書き込みに時間がかかって
+いる可能性があります。/tmpをRAM-DISKに変更すると改善する可能性がありま
+す。CentOS7ではRAM-DISKは/dev/shmです。以下のコマンドを打ち込んで作業ファ
+イルディレクトリを変更して top コマンドでCPU占有率を比較してみてくださ
+い。
+
+    export GPTMPDIR=/dev/shm 
+
+常時設定する場合は ~/.bashrcに加筆すれば良いです。
 
 以上
 
@@ -257,6 +286,7 @@ print_logsum(X, K) =
 {
     \\改行無し
     local(i, ret, xlen, num);
+    \\print("print_logsum: X= ", X);
     xlen = length(X);
     num = 0.0;
     for(i=1,xlen,
@@ -335,7 +365,7 @@ flag_tenuki_factor=1;
   手抜き素因数分解の閾値。flag_tenuki_factor=1の場合、以下の数値
 　より大きい時は擬似素数が含まれる可能性が有る方法を取る。
 
-  atan(y/x)で、 (x^2 + y^2) > Normal_factor_limit  ときに手抜き。
+  atan(y/x)で、 (x^2 + y^2) > Normal_factor_limit  のときに手抜き。
 */
 Normal_factor_limit = 10^12;
 \\Normal_factor_limit = 10^4;
@@ -550,7 +580,8 @@ atan_solver_aux(X, P, M) =
     for(i=1, klen[2],
 	K1 = K[,i]~;
 	flag_have_zero=0; \\ Kにゼロが入っているか否か
-	if(setsearch(K1, 0) > 0, flag_have_zero=1; ret_stat=1);
+	if(setsearch(vecsort(K1), 0) > 0, flag_have_zero=1; ret_stat=1);
+	
 
         \\ 組み込み関数atan()を使った調査
 	k = calc_atan_k(X, K1);
@@ -830,7 +861,7 @@ atan_check(X, K) =
 
     \\ 事前にパラメータ計算
     flag_have_zero=0; \\ Kにゼロが入っているか否か
-    if(setsearch(K, 0) > 0, flag_have_zero=1);
+    if(setsearch(vecsort(K), 0) > 0, flag_have_zero=1);
           
     \\ 組み込み関数atan()を使った調査
     k = calc_atan_k(X, K);
